@@ -80,9 +80,9 @@ def clean_ramdisk(ramdisk_dir):
     logging.info('Deleting old runs from ramdisk.')
     # We implement this in a very simple way, by just passing the rm
     # command to the os.
-    runs_path = os.path.join(ramdisk_dir, 'run*')
-    hidden_keys_path = os.path.join(ramdisk_dir, '.run*')
-    command = 'rm -rf %s %s' % (runs_path, hidden_keys_path)
+    runs_path = os.path.join(ramdisk_dir, 'run{,[0-9]}'+'[0-9]'*6)
+    keys_path = os.path.join(ramdisk_dir, '.run{,[0-9]}'+'[0-9]'*6+'.global')
+    command = 'rm -rf %s %s' % (runs_path, keys_path)
     execute_literal_shell_command(command)
 
 def clean_fu_data_dir(fu_host_name, fu_data_dir):
@@ -90,6 +90,6 @@ def clean_fu_data_dir(fu_host_name, fu_data_dir):
     logging.info('Deleting old runs from fu data dir.')
     # We implement this in a very simple way, by just passing the rm
     # command to the os.
-    runs_path = os.path.join(fu_data_dir, 'run*')
+    runs_path = os.path.join(fu_data_dir, 'run{,[0-9]}'+'[0-9]'*6)
     command = 'ssh %s rm -rf %s' % (fu_host_name, runs_path)
     execute_literal_shell_command(command)
