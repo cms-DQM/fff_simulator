@@ -60,39 +60,47 @@ class FFFSimulator(Daemon):
         # Here we start the actual program flow:
         FFFSimulator.assert_run_is_available(cfg.source_run,
                                              cfg.source_dir,
-                                             cfg.alternative_source_dir)
-        FFFSimulator.assert_data_can_be_used(cfg.source_run, cfg.source_dir)
-        fff_os_operations.hltd_stop()
-        fff_os_operations.hltd_stop(cfg.fu_host_name)
-        fff_os_operations.clean_ramdisk(cfg.ramdisk_dir)
-        fff_os_operations.clean_fu_data_dir(cfg.fu_host_name, cfg.fu_data_dir)
-        fff_os_operations.hltd_start()
-        fff_os_operations.hltd_start(cfg.fu_host_name)
-        # After the start of hltd, we wait 5 seconds before creating our first run
-        # otherwise hltd is no way fast enought to pick it up.
-        time.sleep(10)
-        FFFSimulator.start_simulating(cfg.source_run, cfg.source_dir,
-                                      cfg.ramdisk_dir, cfg.run_key,
-                                      cfg.seconds_per_lumi)
+                                             cfg.alternative_source_dirs)
+        if FFFSimulator.assert_data_can_be_used(cfg.source_run,
+                                                cfg.source_dir):
+          fff_os_operations.hltd_stop()
+          fff_os_operations.hltd_stop(cfg.fu_host_name)
+          fff_os_operations.clean_ramdisk(cfg.ramdisk_dir)
+          fff_os_operations.clean_fu_data_dir(cfg.fu_host_name,
+                                              cfg.fu_data_dir)
+          fff_os_operations.hltd_start()
+          fff_os_operations.hltd_start(cfg.fu_host_name)
+          # After the start of hltd, we wait 5 seconds before creating our
+          # first run, otherwise hltd is no way fast enough to pick it up.
+          time.sleep(10)
+          FFFSimulator.start_simulating(cfg.source_run, cfg.source_dir,
+                                        cfg.ramdisk_dir, cfg.run_key,
+                                        cfg.seconds_per_lumi)
 
     @staticmethod
-    def assert_run_is_available(source_run, source_dir, alternative_source_dir):
+    def assert_run_is_available(source_run, source_dir,
+                                alternative_source_dirs):
         if not FFFSimulator.is_source_run_in_source_dir(source_run,
                                                         source_dir):
-            if not FFFSimulator.is_source_run_in_source_dir(source_run,
-                            alternative_source_dir):
-                # If we cannot find the source run in either the source dir or
-                # the aternative source dir, there is nothing we can do and we
-                # exit.
+            # Try each of the alternative source dirs to find the run:
+            found_the_run = False
+            for alternative_source_dir in alternative_source_dirs.split(';'):
+                if FFFSimulator.is_source_run_in_source_dir(source_run,
+                              alternative_source_dir):
+                    # If we cannot find the source run in the source dir, but
+                    # we did find it in an alternative source dir, then we can
+                    # copy it from the alterative source dir to the source dir
+                    FFFSimulator.copy_run(source_run,
+                                          alternative_source_dir,
+                                          source_dir)
+                    found_the_run = True
+                    break
+            # If we cannot find the source run in either the source dir or any
+            # of the aternative source dirs, there is nothing we can do and we
+            # exit.
+            if not found_the_run:
                 logging.error("Could not get source run. Exiting.")
                 sys.exit(0)
-            else:
-                # If we cannot find the source run in the source dir, but we
-                # did find it in the aternative source dir, then we can copy it
-                # from the alterative source dir to the source dir
-                FFFSimulator.copy_run(source_run,
-                                      alternative_source_dir,
-                                      source_dir)
 
     @staticmethod
     def is_source_run_in_source_dir(source_run, source_dir):
@@ -341,8 +349,8 @@ class FFFSimulator(Daemon):
         # variables:
         config.source_run = config.get('General', 'SourceRun')
         config.source_dir = config.get('General', 'SourceDir')
-        config.alternative_source_dir = config.get('General',
-                                                   'AlternativeSourceDir')
+        config.alternative_source_dirs = config.get('General',
+                                                    'AlternativeSourceDirs')
         config.ramdisk_dir = config.get('General', 'RamdiskDir')
         config.fu_data_dir = config.get('General', 'FUDataDir')
         config.fu_host_name = config.get('General', 'FUHostName')
