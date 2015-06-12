@@ -72,7 +72,7 @@ class FFFSimulator(Daemon):
           fff_os_operations.hltd_start(cfg.fu_host_name)
           # After the start of hltd, we wait 5 seconds before creating our
           # first run, otherwise hltd is no way fast enough to pick it up.
-          time.sleep(10)
+          time.sleep(5)
           FFFSimulator.start_simulating(cfg.source_run, cfg.source_dir,
                                         cfg.ramdisk_dir, cfg.run_key,
                                         cfg.seconds_per_lumi)
