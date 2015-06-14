@@ -341,6 +341,16 @@ class FFFSimulator(Daemon):
         open(full_name, 'a').close()
         logging.info('Wrote EoR (end of run) file: %s' % full_name)
 
+    def halt(self):
+        # Load config variables to local variables for easy usage
+        cfg = FFFSimulator.load_configuration()
+        # To stop processing, we try to write an End-of-Run file
+        logging.info("Simulator received request to stop.")
+        fff_os_operations.hltd_stop()
+        fff_os_operations.hltd_stop(cfg.fu_host_name)
+        fff_os_operations.hltd_start()
+        fff_os_operations.hltd_start(cfg.fu_host_name)
+
     @staticmethod
     def load_configuration():
         config = ConfigParser.RawConfigParser()
