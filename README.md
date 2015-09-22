@@ -1,4 +1,7 @@
 # fff_simulator
+
+(!) THIS REPO IS OUTDATED, SINCE DMITRIJUS INCORPORATED THIS CODE INTO THE FFF_TOOLS IN SEPT 2015
+
 The FFF Simulator (previously called roll script) simulates the behaviour of the DAQ system for DQM.
 
 It copies a predefined set of streamer files and pb files to the ramdisk at
